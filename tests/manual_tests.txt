@@ -1,0 +1,603 @@
+Cost Manager RESTful Web Services - Manual Tests
+
+Team:
+Team Member 1: Ruth Dubinsky
+Team Member 2: Matan Shabo
+
+General Notes:
+The project includes four RESTful services:
+1. logs service - port 4001
+2. users service - port 4002
+3. costs service - port 4003
+4. about service - port 4004
+
+All services are connected to MongoDB Atlas database: costmanager.
+The tests were performed manually using the browser and PowerShell.
+
+
+==============================
+1. Logs Service Tests
+==============================
+
+Test 1:
+Request:
+GET http://localhost:4001/api/logs
+
+Expected result:
+The service returns a JSON array of logs.
+
+Actual result:
+The service returned a JSON array of logs.
+
+Status:
+PASSED
+
+
+==============================
+2. Users Service Tests
+==============================
+
+Test 2:
+Request:
+GET http://localhost:4002/api/users/123123
+
+Expected result:
+The service returns the details of the existing user and the total costs.
+
+Actual result:
+{
+  "first_name": "mosh",
+  "last_name": "israeli",
+  "id": 123123,
+  "total": 8
+}
+
+Status:
+PASSED
+
+
+Test 3:
+Request:
+GET http://localhost:4002/api/users/999999
+
+Expected result:
+The service returns an error because the user does not exist.
+
+Actual result:
+{
+  "id": "USER_NOT_FOUND",
+  "message": "user not found"
+}
+
+Status:
+PASSED
+
+
+Test 4:
+Request:
+GET http://localhost:4002/api/users/abc
+
+Expected result:
+The service returns an error because the user id is not a number.
+
+Actual result:
+{
+  "id": "INVALID_USER_ID",
+  "message": "id must be a number"
+}
+
+Status:
+PASSED
+
+
+Test 5:
+Request:
+POST http://localhost:4002/api/add
+
+
+Expected result:
+The service returns an error because required user fields are missing.
+
+Actual result:
+{
+  "id": "MISSING_USER_DATA",
+  "message": 'id, first_name, last_name and birthday are required'
+}
+
+Status:
+PASSED
+
+
+Test 6:
+Request:
+POST http://localhost:4002/api/add
+
+
+Expected result:
+The service returns an error because the user already exists.
+
+Actual result:
+{
+  "id": "USER_ALREADY_EXISTS",
+  "message": "user already exists"
+}
+
+Status:
+PASSED
+
+
+
+Test 7:
+Request:
+POST http://localhost:4002/api/add
+
+Expected result:
+The service adds a new user successfully and returns the user details.
+
+Actual result:
+{
+  "id": 666666,
+  "first_name": "test",
+  "last_name": "student",
+  "birthday": "2000-01-01T00:00:00.000Z"
+}
+
+Status:
+PASSED
+
+
+Test 8:
+Request:
+GET http://localhost:4002/api/users
+
+Expected result:
+The service returns a JSON array containing all users.
+
+Actual result:
+[
+  {
+    "id": 123123,
+    "first_name": "mosh",
+    "last_name": "israeli",
+    "birthday": "1990-01-01T00:00:00.000Z"
+  },
+  {
+    "id": 666666,
+    "first_name": "test",
+    "last_name": "student",
+    "birthday": "2000-01-01T00:00:00.000Z"
+  }
+]
+
+Status:
+PASSED
+
+
+
+
+==============================
+3. Costs Service Tests
+==============================
+
+Test 9:
+Request:
+GET http://localhost:4003/api/report?id=123123&year=2026&month=5
+
+Expected result:
+The service returns a monthly cost report for the existing user.
+
+Actual result:
+{
+  "userid": 123123,
+  "year": 2026,
+  "month": 5,
+  "costs": [
+    {
+      "food": [
+        {
+          "sum": 8,
+          "description": "milk 9",
+          "day": 7
+        }
+      ]
+    },
+    {
+      "health": []
+    },
+    {
+      "housing": []
+    },
+    {
+      "sports": []
+    },
+    {
+      "education": []
+    }
+  ]
+}
+
+Status:
+PASSED
+
+
+Test 10:
+Request:
+GET http://localhost:4003/api/report?id=999999&year=2026&month=5
+
+Expected result:
+The service returns an error because the user does not exist.
+
+Actual result:
+{
+  "id": "USER_NOT_FOUND",
+  "message": "user not found"
+}
+
+Status:
+PASSED
+
+
+Test 11:
+Request:
+GET http://localhost:4003/api/report?id=123123&year=2026&month=13
+
+Expected result:
+The service returns an error because the month is invalid.
+
+Actual result:
+{
+  "id": "INVALID_MONTH",
+  "message": "month must be between 1 and 12"
+}
+
+Status:
+PASSED
+
+
+Test 12:
+Request:
+GET http://localhost:4003/api/report?id=123123&year=2026&month=0
+
+Expected result:
+The service returns an error because the month is invalid.
+
+Actual result:
+{
+  "id": "INVALID_MONTH",
+  "message": "month must be between 1 and 12"
+}
+
+Status:
+PASSED
+
+
+Test 13:
+Request:
+GET http://localhost:4003/api/report?id=123123&year=2026
+
+Expected result:
+The service returns an error because the month parameter is missing.
+
+Actual result:
+{
+  "id": "INVALID_REPORT_PARAMS",
+  "message": "id, year and month must be numbers"
+}
+
+Status:
+PASSED
+
+
+Test 14:
+Request:
+GET http://localhost:4003/api/report?id=123123&month=5
+
+Expected result:
+The service returns an error because the year parameter is missing.
+
+Actual result:
+{
+  "id": "INVALID_REPORT_PARAMS",
+  "message": "id, year and month must be numbers"
+}
+
+Status:
+PASSED
+
+
+Test 15:
+Request:
+GET http://localhost:4003/api/report?year=2026&month=5
+
+Expected result:
+The service returns an error because the id parameter is missing.
+
+Actual result:
+{
+  "id": "INVALID_REPORT_PARAMS",
+  "message": "id, year and month must be numbers"
+}
+
+Status:
+PASSED
+
+
+Test 16:
+Request:
+GET http://localhost:4003/api/report?id=abc&year=2026&month=5
+
+Expected result:
+The service returns an error because the id is not a number.
+
+Actual result:
+{
+  "id": "INVALID_REPORT_PARAMS",
+  "message": "id, year and month must be numbers"
+}
+
+Status:
+PASSED
+
+
+Test 17:
+Request:
+POST http://localhost:4003/api/add
+
+
+Expected result:
+The service returns an error because the category is invalid.
+
+Actual result:
+{
+  "id": "INVALID_CATEGORY",
+  "message": "category must be food, health, housing, sports or education"
+}
+
+Status:
+PASSED
+
+
+Test 18:
+Request:
+POST http://localhost:4003/api/add
+
+
+Expected result:
+The service returns an error because the sum field is missing.
+
+Actual result:
+{
+  "id": "MISSING_COST_DATA",
+  "message": "description, category, userid and sum are required"
+}
+
+Status:
+PASSED
+
+
+Test 19:
+Request:
+POST http://localhost:4003/api/add
+
+Expected result:
+The service returns an error because the description field is missing.
+
+Actual result:
+{
+  "id": "MISSING_COST_DATA",
+  "message": "description, category, userid and sum are required"
+}
+
+Status:
+PASSED
+
+
+Test 20:
+Request:
+POST http://localhost:4003/api/add
+
+
+Expected result:
+The service returns an error because the userId field is missing.
+
+Actual result:
+{
+  "id": "MISSING_COST_DATA",
+  "message": "description, category, userid and sum are required"
+}
+
+Status:
+PASSED
+
+
+Test 21:
+Request:
+POST http://localhost:4003/api/add
+
+
+Expected result:
+The service returns an error because the category field is missing.
+
+Actual result:
+{
+  "id": "MISSING_COST_DATA",
+  "message": "description, category, userid and sum are required"
+}
+
+Status:
+PASSED
+
+
+Test 22:
+POST http://localhost:4003/api/add
+
+
+Expected result:
+The service returns an error because the user does not exist.
+
+Actual result:
+{
+  "id": "USER_NOT_FOUND",
+  "message": "user not found"
+}
+
+Status:
+PASSED
+
+
+Test 23:
+Request:
+POST http://localhost:4003/api/add
+
+Expected result:
+The service adds a new cost item successfully for the existing user.
+
+Actual result:
+{
+  "userid": 666666,
+  "description": "coffee",
+  "category": "food",
+  "sum": 15
+}
+
+Status:
+PASSED
+
+
+Test 24:
+Request:
+GET http://localhost:4003/api/report?id=666666&year=2026&month=5
+
+Expected result:
+The service returns the monthly cost report including the newly added cost item.
+
+Actual result:
+{
+  "userid": 666666,
+  "year": 2026,
+  "month": 5,
+  "costs": [
+    {
+      "food": [
+        {
+          "sum": 15,
+          "description": "coffee",
+          "day": 24
+        }
+      ]
+    },
+    {
+      "health": []
+    },
+    {
+      "housing": []
+    },
+    {
+      "sports": []
+    },
+    {
+      "education": []
+    }
+  ]
+}
+
+Status:
+PASSED
+
+
+Test 25:
+Request:
+POST http://localhost:4003/api/add
+
+Expected result:
+The service adds the new cost item successfully and uses the provided future date and time.
+
+Actual result:
+{
+  "description": "future date test",
+  "category": "food",
+  "userid": 666666,
+  "sum": 10,
+  "created_at": "2030-01-01T12:00:00.000Z"
+}
+
+Status:
+PASSED
+
+
+Test 26:
+Request:
+POST http://localhost:4003/api/add
+
+Expected result:
+The service returns an error because adding cost items with past dates is not allowed.
+
+Actual result:
+{
+  "id": "PAST_DATE_NOT_ALLOWED",
+  "message": "costs with past dates are not allowed"
+}
+
+Status:
+PASSED
+==============================
+4. About Service Tests
+==============================
+
+Test 27:
+Request:
+GET http://localhost:4004/api/about
+
+Expected result:
+The service returns the details of the team members.
+
+Actual result:
+[
+  {
+    "first_name": "Ruth",
+    "last_name": "Dubinsky"
+  },
+  {
+   "first_name": "Matan",
+   "last_name": "Shabo"
+  }
+]
+
+Status:
+PASSED
+
+
+Test 28:
+Request:
+GET http://localhost:4001/api/logs
+
+Expected result:
+The logs list includes logs from the about service after accessing /api/about.
+
+Actual result:
+The logs list includes:
+{
+  "service": "about",
+  "method": "GET",
+  "url": "/api/about",
+  "endpoint": "/api/about",
+  "status": 200,
+  "message": "about endpoint accessed"
+}
+
+Status:
+PASSED
+
+
+==============================
+Final Summary
+==============================
+
+All main services were tested manually:
+logs service - PASSED
+users service - PASSED
+costs service - PASSED
+about service - PASSED
+
+The system handles valid requests and invalid requests correctly.
+The services are connected to MongoDB Atlas and save logs into the logs collection.
