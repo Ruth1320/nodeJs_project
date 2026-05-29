@@ -16,28 +16,32 @@ app.use(express.json());
 const port = process.env.PORT || 4001;
 const serviceName = process.env.SERVICE_NAME || 'logs';
 
-/*
- This service is responsible for the logs process.
- It exposes an endpoint for getting all logs from MongoDB.
- In addition, it writes a log document for every HTTP request and for every endpoint access.
-*/
+
+// Save log to Pino
+function logToConsole(method, url, endpoint, status, message) {
+    logger.info({ method, url, endpoint, status }, message);
+}
+
+// Save log to MongoDB
+async function saveLogToDatabase(method, url, endpoint, status, message) {
+    await Log.create({
+        service: serviceName,
+        method,
+        url,
+        endpoint,
+        status,
+        message,
+        created_at: new Date()
+    });
+}
+
+// Main log function
 async function saveLog(method, url, endpoint, status, message) {
     try {
-        // Print the log message using Pino.
-        logger.info({ method, url, endpoint, status }, message);
-
-        // Save the log message in MongoDB.
-        await Log.create({
-            service: serviceName,
-            method,
-            url,
-            endpoint,
-            status,
-            message
-        });
-    } catch (error) {
-        // Logging errors should not crash the service.
-        logger.error(error);
+        logToConsole(method, url, endpoint, status, message);
+        await saveLogToDatabase(method, url, endpoint, status, message);
+    } catch (err) {
+        logger.error(err.message);
     }
 }
 
@@ -56,6 +60,10 @@ app.use((req, res, next) => {
     next();
 });
 
+async function getAllLogs() {
+    return await Log.find({}, { __v: 0 }).sort({ created_at: -1 });
+}
+
 // Endpoint for returning all logs stored in the logs collection.
 app.get('/api/logs', async (req, res) => {
     try {
@@ -68,9 +76,9 @@ app.get('/api/logs', async (req, res) => {
         );
 
         // Return the logs sorted from newest to oldest and hide the internal __v field.
-        const logs = await Log.find({}, { __v: 0 }).sort({ created_at: -1 });
-
+        const logs = await getAllLogs();
         res.status(200).json(logs);
+
     } catch (error) {
         res.status(500).json({
             id: 'LOGS_ERROR',

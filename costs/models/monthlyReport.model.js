@@ -36,6 +36,6 @@ const monthlyReportSchema = new mongoose.Schema({
 });
 
 // A user should have only one saved report for a specific month and year.
-monthlyReportSchema.index({ userId: 1, year: 1, month: 1 }, { unique: true });
+monthlyReportSchema.index({ userid: 1, year: 1, month: 1 }, { unique: true });
 
 module.exports = mongoose.model('MonthlyReport', monthlyReportSchema);
