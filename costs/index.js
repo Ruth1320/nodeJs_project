@@ -187,6 +187,16 @@ async function getMonthlyReport(userid, year, month) {
 }
 
 
+function normalizeReport(report) {
+    return {
+        userid: report.userid,
+        year: report.year,
+        month: report.month,
+        costs: report.costs
+    };
+}
+
+
 // Validate all cost input fields
 function validateCostInput(description, category, userid, sum, created_at) {
 
@@ -213,7 +223,12 @@ function validateCostInput(description, category, userid, sum, created_at) {
         };
     }
 
-// Validate category type.
+
+    //disables the option to enter huge description
+    const safeDescription = description.slice(0, 200);
+
+
+    // Validate category type.
     if (typeof category !== 'string') {
         return {
             error: {
@@ -223,6 +238,7 @@ function validateCostInput(description, category, userid, sum, created_at) {
             }
         };
     }
+
 
 // Validate empty text fields.
     if (
@@ -263,7 +279,7 @@ function validateCostInput(description, category, userid, sum, created_at) {
     }
 
     // Validate that the sum is a valid non-negative number.
-    if (!Number.isFinite(numericSum) || numericSum < 0) {
+    if (!Number.isFinite(numericSum) || numericSum <= 0) {
         return {
             error: {
                 status: 400,
@@ -330,7 +346,8 @@ async function validateUserExists(userid) {
 
 // Create the cost in MongoDB.
 async function createCost(description, category, numericuserid, numericSum, costDate) {
-    return await Cost.create({description, category, userid: numericuserid, sum: numericSum, created_at: costDate});}
+    return await Cost.create({description, category, userid: numericuserid, sum: numericSum, created_at: costDate});
+}
 
 
 // Validates request and creates a new cost for an existing user in the database.
@@ -460,11 +477,11 @@ app.get('/api/report', async (req, res) => {
                 });
         }
 
-        
+
         // Generate or retrieve monthly report (cached or computed).
         const report = await getMonthlyReport(userid, year, month);
 
-        res.status(200).json(report);
+        res.status(200).json(normalizeReport(report));
     } catch (error) {
         res.status(500).json({
             id: 'REPORT_ERROR',
@@ -475,6 +492,7 @@ app.get('/api/report', async (req, res) => {
 
 // Handle requests to endpoints that do not exist.
 app.use((req, res) => {
+    בג
     res.status(404).json({
         id: 'NOT_FOUND',
         message: 'endpoint not found'
