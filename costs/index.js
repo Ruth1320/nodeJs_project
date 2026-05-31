@@ -186,7 +186,7 @@ async function getMonthlyReport(userid, year, month) {
     return report;
 }
 
-
+//saves specific order.
 function normalizeReport(report) {
     return {
         userid: report.userid,

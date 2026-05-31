@@ -218,7 +218,7 @@ app.get('/api/users', async (req, res) => {
     }
 });
 
-
+//Checks that the user ID is a real number
 function validateUserid(numericId) {
     if (!Number.isFinite(numericId)) {
         return {
