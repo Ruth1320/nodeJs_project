@@ -19,7 +19,7 @@ const serviceName = process.env.SERVICE_NAME || 'logs';
 
 // Save log to Pino
 function logToConsole(method, url, endpoint, status, message) {
-    logger.info({ method, url, endpoint, status }, message);
+    logger.info({method, url, endpoint, status}, message);
 }
 
 // Save log to MongoDB
@@ -61,7 +61,7 @@ app.use((req, res, next) => {
 });
 
 async function getAllLogs() {
-    return await Log.find({}, { __v: 0 }).sort({ created_at: -1 });
+    return await Log.find({}, {__v: 0}).sort({created_at: -1});
 }
 
 // Endpoint for returning all logs stored in the logs collection.

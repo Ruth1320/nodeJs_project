@@ -67,6 +67,29 @@ function validateUserInput(id, first_name, last_name, birthday) {
         };
     }
 
+    // Validate the string's type.
+    if (typeof first_name !== 'string' || typeof last_name !== 'string') {
+        return {
+            error: {
+                status: 400,
+                id: 'INVALID_NAME',
+                message: 'first_name and last_name must be strings'
+            }
+        };
+    }
+
+
+    if (first_name.trim() === '' || last_name.trim() === '') {
+        return {
+            error: {
+                status: 400,
+                id: 'INVALID_NAME',
+                message: 'first_name and last_name cannot be empty'
+            }
+        };
+    }
+
+
     const numericId = Number(id);
     const birthDate = new Date(birthday);
 
@@ -132,7 +155,7 @@ app.post('/api/add', async (req, res) => {
     try {
         await saveLog(req.method, req.originalUrl, '/api/add', 200, 'add user endpoint accessed');
 
-        const {id, first_name, last_name, birthday} = req.body;
+        const {id, first_name, last_name, birthday} = req.body || {} ;
 
 
         // Validate input
@@ -194,8 +217,6 @@ app.get('/api/users', async (req, res) => {
         });
     }
 });
-
-
 
 
 function validateUserid(numericId) {
@@ -271,6 +292,7 @@ app.get('/api/users/:id', async (req, res) => {
                 });
         }
 
+        // Extract the actual user document returned by getUserById.
         const userData = user.user;
 
         const total = await getUserTotalCosts(numericId);

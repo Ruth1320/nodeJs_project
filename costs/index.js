@@ -7,7 +7,7 @@ const pino = require('pino');
 const Cost = require('./models/cost.model');
 const User = require('./models/user.model');
 const Log = require('./models/log.model');
-const MonthlyReport = require('./models/monthlyReport.model');
+const MonthlyReport = require('./models/monthly_report.model');
 
 const app = express();
 const logger = pino();
@@ -197,7 +197,8 @@ function normalizeReport(report) {
 }
 
 
-// Validate all cost input fields
+
+//validate all cost input fields
 function validateCostInput(description, category, userid, sum, created_at) {
 
     // Validate required cost fields.
@@ -225,7 +226,7 @@ function validateCostInput(description, category, userid, sum, created_at) {
 
 
     //disables the option to enter huge description
-    const safeDescription = description.slice(0, 200);
+    const truncatedDescription = description.slice(0, 200);
 
 
     // Validate category type.
@@ -241,8 +242,7 @@ function validateCostInput(description, category, userid, sum, created_at) {
 
 
 // Validate empty text fields.
-    if (
-        description.trim() === '' || category.trim() === '') {
+    if (truncatedDescription.trim() === '' || category.trim() === '') {
         return {
             error: {
                 status: 400,
@@ -264,11 +264,11 @@ function validateCostInput(description, category, userid, sum, created_at) {
         };
     }
 
-    const numericuserid = Number(userid);
+    const numericUserId = Number(userid);
     const numericSum = Number(sum);
 
     // Validate that the userid is numeric.
-    if (!Number.isFinite(numericuserid)) {
+    if (!Number.isFinite(numericUserId)) {
         return {
             error: {
                 status: 400,
@@ -320,9 +320,10 @@ function validateCostInput(description, category, userid, sum, created_at) {
     }
 
     return {
-        numericuserid,
+        numericUserId,
         numericSum,
-        costDate
+        costDate,
+        truncatedDescription
     };
 
 }
@@ -345,8 +346,8 @@ async function validateUserExists(userid) {
 }
 
 // Create the cost in MongoDB.
-async function createCost(description, category, numericuserid, numericSum, costDate) {
-    return await Cost.create({description, category, userid: numericuserid, sum: numericSum, created_at: costDate});
+async function createCost(description, category, numericUserId, numericSum, costDate) {
+    return await Cost.create({description, category, userid: numericUserId, sum: numericSum, created_at: costDate});
 }
 
 
@@ -355,7 +356,7 @@ app.post('/api/add', async (req, res) => {
     try {
         await saveLog(req.method, req.originalUrl, '/api/add', 200, 'add cost endpoint accessed');
 
-        const {description, category, userid, sum, created_at} = req.body;
+        const {description, category, userid, sum, created_at} = req.body || {} ;
 
         // Validate input
         const validation = validateCostInput(description, category, userid, sum, created_at);
@@ -370,10 +371,10 @@ app.post('/api/add', async (req, res) => {
         }
 
 
-        const {numericuserid, numericSum, costDate} = validation;
+        const {numericUserId, numericSum, costDate, truncatedDescription} = validation;
 
-        // Check user exists
-        const userCheck = await validateUserExists(numericuserid);
+
+        const userCheck = await validateUserExists(numericUserId);
         if (userCheck.error) {
             return res
                 .status(userCheck.error.status)
@@ -385,7 +386,7 @@ app.post('/api/add', async (req, res) => {
 
 
         // Save cost
-        const cost = await createCost(description, category, numericuserid, numericSum, costDate);
+        const cost = await createCost(truncatedDescription, category, numericUserId, numericSum, costDate);
 
 
         // Return response
@@ -407,9 +408,13 @@ app.post('/api/add', async (req, res) => {
 });
 
 
+/*
+  Validates the parameters for generating a report.
+  Checks that userid, year, and month are valid numbers,
+  ensures required values are integers, and verifies they fall within acceptable ranges.
+*/
 function validateReportParams(userid, year, month) {
 
-    // Validate report query parameters.
     if (!Number.isFinite(userid) || !Number.isFinite(year) || !Number.isFinite(month)) {
         return {
             error: {
@@ -420,12 +425,12 @@ function validateReportParams(userid, year, month) {
         };
     }
 
-    if (!Number.isInteger(year) || year <= 0) {
+    if (!Number.isInteger(userid) || userid <= 0 || !Number.isInteger(year) || year <= 0 || !Number.isInteger(month)) {
         return {
             error: {
                 status: 400,
-                id: 'INVALID_YEAR_FORMAT',
-                message: 'year must be a positive whole number'
+                id: 'INVALID_REPORT_PARAMS',
+                message: 'id, year and month must be whole numbers'
             }
         };
     }
@@ -492,7 +497,6 @@ app.get('/api/report', async (req, res) => {
 
 // Handle requests to endpoints that do not exist.
 app.use((req, res) => {
-    בג
     res.status(404).json({
         id: 'NOT_FOUND',
         message: 'endpoint not found'

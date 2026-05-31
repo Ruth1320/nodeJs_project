@@ -18,10 +18,9 @@ const PORT = process.env.PORT || 4004;
 const SERVICE_NAME = process.env.SERVICE_NAME || 'about';
 
 
-
 // Save log to Pino
 function logToConsole(method, url, endpoint, status, message) {
-    logger.info({ method, url, endpoint, status }, message);
+    logger.info({method, url, endpoint, status}, message);
 }
 
 // Save log to MongoDB
@@ -62,7 +61,6 @@ app.use((req, res, next) => {
 
     next();
 });
-
 
 
 // Retrieve team members from environment variables

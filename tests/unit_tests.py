@@ -2,9 +2,7 @@ import unittest
 from unittest.mock import patch, MagicMock
 import requests
 
-# -------------------------------------------------------------------------
-# פונקציות עזר קטנות שמדמות קריאות HTTP לשרתים שלך
-# -------------------------------------------------------------------------
+
 def call_about_service():
     return requests.get("http://localhost:4004/api/about")
 
@@ -27,9 +25,7 @@ def call_get_report(params):
     return requests.get("http://localhost:4003/api/report", params=params)
 
 
-# =========================================================================
-# סוויטת הבדיקות המרכזית המעמיקה ביותר - UNIT TESTS מבודדים לחלוטין
-# =========================================================================
+
 
 class TestMicroservicesUnitDeep(unittest.TestCase):
 
@@ -122,13 +118,12 @@ class TestMicroservicesUnitDeep(unittest.TestCase):
         mock_response.json.return_value = {"id": "MISSING_USER_DATA", "message": "id, first_name, last_name and birthday are required"}
         mock_post.return_value = mock_response
 
-        response = call_add_user({"id": 12345})  # חסרים שמות ותאריך לידה
+        response = call_add_user({"id": 12345})
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()["id"], "MISSING_USER_DATA")
 
     @patch('requests.post')
     def test_add_user_invalid_id_type(self, mock_post):
-        """USERS: חסימת יצירה כשה-ID אינו מספר (למשל מחרוזת טקסט)"""
         mock_response = MagicMock()
         mock_response.status_code = 400
         mock_response.json.return_value = {"id": "INVALID_USER_ID", "message": "id must be a number"}
@@ -305,7 +300,6 @@ class TestMicroservicesUnitDeep(unittest.TestCase):
 
     @patch('requests.get')
     def test_get_report_computed_structure_ok(self, mock_get):
-        """COSTS: הפקת דוח מחושב מחדש ובדיקה שכל מערכי הקטגוריות נוצרים בצורה תקינה (Computed Design Pattern)"""
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_response.json.return_value = {
@@ -322,7 +316,7 @@ class TestMicroservicesUnitDeep(unittest.TestCase):
         response = call_get_report({"id": 123, "year": 2026, "month": 5})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["userid"], 123)
-        self.assertEqual(len(response.json()["costs"]), 5)  # מוודא שכל 5 הקטגוריות קיימות בדוח המבנה
+        self.assertEqual(len(response.json()["costs"]), 5)
         self.assertEqual(response.json()["costs"][0]["food"][0]["description"], "Pizza")
 
 
