@@ -267,8 +267,8 @@ function validateCostInput(description, category, userid, sum, created_at) {
     const numericUserId = Number(userid);
     const numericSum = Number(sum);
 
-    // Validate that the userid is numeric.
-    if (!Number.isFinite(numericUserId)) {
+    // Validate that the userid is positive and numeric.
+    if (!Number.isFinite(numericUserId)|| numericUserId <= 0) {
         return {
             error: {
                 status: 400,
